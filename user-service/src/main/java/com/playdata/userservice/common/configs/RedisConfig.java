@@ -20,7 +20,7 @@ public class RedisConfig {
     private int port;
 
     // Redis 서버와의 연결을 설정하는 역할을 하는 RedisConnectionFactory
-    // Redis 접속에 필요한 설정을 지정한 후 구현체를 빈으로 등록
+    // Redis 접속에 필요한 설정을 지정한 후 구현체를 빈으로 등록[
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
         RedisStandaloneConfiguration configuration

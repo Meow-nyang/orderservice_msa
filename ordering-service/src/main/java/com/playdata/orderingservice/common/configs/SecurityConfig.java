@@ -32,7 +32,7 @@ public class SecurityConfig {
         // CSRF(Cross Site Request Forgery) 사이트 간 요청 위조
         http.csrf(csrf -> csrf.disable());
 
-        http.cors(Customizer.withDefaults()); // 직접 커스텀한 CORS 설정을 적용.
+//        http.cors(Customizer.withDefaults()); // 직접 커스텀한 CORS 설정을 적용.
 
         // 세션 관리 상태를 사용하지 않고
         // STATELESS한 토큰을 사용하겠다.
@@ -43,7 +43,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests(auth -> {
             auth
 //                    .requestMatchers("/user/list").hasRole("ROLE_ADMIN")
-                    .requestMatchers("/actuator/**").permitAll()
+                    .requestMatchers("/actuator/**", "/demo/**").permitAll()
                     .anyRequest().authenticated();
         });
         // "/user/create", "/user/doLogin"은 인증 검사가 필요 없다고 설정했고,
@@ -69,7 +69,6 @@ public class SecurityConfig {
     }
 
 }
-
 
 
 
