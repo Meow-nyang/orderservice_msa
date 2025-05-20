@@ -16,9 +16,9 @@ pipeline {
             steps {
                 script {
                 // 변경된 파일 감지
-                    def changedFile = sh(script: "git diff --name-only HEAD~1 HEAD", returnStdout: true)
+                    def changedFiles = sh(script: "git diff --name-only HEAD~1 HEAD", returnStdout: true)
                                         .trim()
-                                        .split('\n') 변경된 파일을 줄 단위로 분리
+                                        .split('\n') //변경된 파일을 줄 단위로 분리
 
                     // 변경된 파일 출력
                     // [user-service/src/main/resources/application.yml,
