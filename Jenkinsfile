@@ -24,7 +24,7 @@ pipeline {
                 withCredentials([file(credentialsId: 'app-dev-yml', variable: 'configSecret')]) {
                     scrpit {
                         sh
-                        cp \$configSecret config-service/src/main/resources/application-dev.yml
+                        cp $configSecret config-service/src/main/resources/application-dev.yml
 
                     }
                 }
