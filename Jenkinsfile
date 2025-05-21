@@ -78,6 +78,9 @@ pipeline {
                         // 오직 config-service에만 복사
                         sh """
                         cp \$SECRET_YML config-service/src/main/resources/application-dev.yml
+                        ./gradlew clean build -x test
+                        ls -al ./build/libs
+                        cd ..
                         """
                     }
                 }
