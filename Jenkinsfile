@@ -71,9 +71,7 @@ pipeline {
         }
 
         stage('Copy Secret YML to Config Service') {
-            when {
-                expression { env.CHANGED_SERVICES != "" }
-            }
+
             steps {
                 script {
                     withCredentials([file(credentialsId: 'app-dev-yml', variable: 'SECRET_YML')]) {
