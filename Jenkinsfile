@@ -18,6 +18,19 @@ pipeline {
                 checkout scm // 젠킨스와 연결된 소스 컨트롤 매니저(git 등)에서 코드를 가져오는 명령어
             }
         }
+
+         stage('Add Secret YML to Config Service') {
+            steps {
+                withCredentials([file(credentialsId: 'app-dev-yml', variable: 'configSecret')]) {
+                    scrpit {
+                        sh
+                        cp \$configSecret config-service/src/main/resources/application-dev.yml
+
+                    }
+                }
+            }
+        }
+
         stage('Detect Changes') {
             steps {
                 script {
@@ -70,23 +83,6 @@ pipeline {
             }
         }
 
-        stage('Copy Secret YML to Config Service') {
-
-            steps {
-                script {
-                    withCredentials([file(credentialsId: 'app-dev-yml', variable: 'SECRET_YML')]) {
-                        // 오직 config-service에만 복사
-                        sh """
-                        cp \$SECRET_YML config-service/src/main/resources/application-dev.yml
-                        cd config-service
-                        ./gradlew clean build -x test
-                        ls -al ./build/libs
-                        cd ..
-                        """
-                    }
-                }
-            }
-        }
 
         stage('Build Changed Services') {
             // 이 스테이지는 빌드되어야 할 서비스가 존재한다면 실행되는 스테이지.
