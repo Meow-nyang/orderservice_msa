@@ -1,6 +1,7 @@
 // 자주 사용되는 필요한 변수를 전역으로 선언하는 것도 가능.
 def ecrLoginHelper = "docker-credential-ecr-login" // ECR credential helper 이름
 def deployHost = "172.31.6.46"
+def appConfigCred  = "app-dev-yml"
 
 // 젠킨스의 선언형 파이프라인 정의부 시작 (그루비 언어)
 pipeline {
@@ -64,6 +65,22 @@ pipeline {
                         echo "No changes detected in service directories. Skipping build and deployment."
                         // 성공 상태로 파이프라인을 종료
                         currentBuild.result = 'SUCCESS'
+                    }
+                }
+            }
+        }
+
+        stage('Copy Secret YML to Config Service') {
+            when {
+                expression { env.CHANGED_SERVICES != "" }
+            }
+            steps {
+                script {
+                    withCredentials([file(credentialsId: 'app-dev-yml', variable: 'SECRET_YML')]) {
+                        // 오직 config-service에만 복사
+                        sh """
+                        cp \$SECRET_YML /config-service/src/main/resources/application-dev.yml
+                        """
                     }
                 }
             }
