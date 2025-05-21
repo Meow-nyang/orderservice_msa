@@ -127,7 +127,6 @@ pipeline {
 
         stage('Deploy Change Service to AWS EC2') {
 
-            }
             steps {
                 sshagent(credentials: ["deploy-key"]) {
                 sh """
