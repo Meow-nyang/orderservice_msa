@@ -19,7 +19,7 @@ pipeline {
             }
         }
 
-
+        // 야호
          stage('Add Secret YML to Config Service') {
             steps {
                 withCredentials([file(credentialsId: 'app-dev-yml', variable: 'configSecret')]) {
