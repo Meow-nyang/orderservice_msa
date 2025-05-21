@@ -22,10 +22,10 @@ pipeline {
          stage('Add Secret YML to Config Service') {
             steps {
                 withCredentials([file(credentialsId: 'app-dev-yml', variable: 'configSecret')]) {
-                    scrpit {
-                        sh
+                    script {
+                        sh '
                         cp $configSecret config-service/src/main/resources/application-dev.yml
-
+                        '
                     }
                 }
             }
