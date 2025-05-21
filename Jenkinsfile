@@ -19,13 +19,12 @@ pipeline {
             }
         }
 
+
          stage('Add Secret YML to Config Service') {
             steps {
                 withCredentials([file(credentialsId: 'app-dev-yml', variable: 'configSecret')]) {
                     script {
-                        sh '
-                        cp $configSecret config-service/src/main/resources/application-dev.yml
-                        '
+                        sh 'cp $configSecret config-service/src/main/resources/application-dev.yml'
                     }
                 }
             }
