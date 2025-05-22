@@ -1,3 +1,4 @@
+
 server:
   port: 8888
 
@@ -8,10 +9,10 @@ spring:
     config:
       server:
         git:
-          uri: ${GITHUB_URL}
+          uri: https://github.com/Meow-nyang/git-local-repo.git
           default-label: main
-          username: ${USERNAME}
-          password: ${TOKEN}
+          username: Meow-nyang
+          password:
 
 management:
   endpoints:
