@@ -1,21 +1,4 @@
 
-server:
-  port: 8888
-
 spring:
-  application:
-    name: config-service
-  cloud:
-    config:
-      server:
-        git:
-          uri: https://github.com/Meow-nyang/git-local-repo.git
-          default-label: main
-          username: Meow-nyang
-          password:
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health, refresh, beans
+  profiles:
+    active: dev
