@@ -5,8 +5,21 @@ spring:
   application:
     name: user-service
 
-
-
+  mail:
+    host: smtp.naver.com #  SMTP 서버 호스트
+    port: 465 #구글587 # SMTP 서버 포트
+    username: slah76
+    password: # 앱 비밀번호 16자리 (공백없이)
+    properties:
+      mail:
+        smtp:
+          auth: true # 사용자 인증 시도 여부 (앱 비밀번호로 인증)
+          timeout: 5000
+          ssl:
+            enable: true
+            trust: smtp.naver.com
+#          starttls:
+#            enable: true 구글(gmail) 설정은 tls 사용 허용
 
 
 

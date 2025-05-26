@@ -36,7 +36,6 @@ public class UserController {
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisTemplate<String, Object> redisTemplate;
 
-    // 야호
     // 기존에는 yml 값 가지고 올때 @Value를 사용해서 끌고 옴
     // Environment 객체를 통해 yml에 있는 프로퍼티에 직접 접근이 가능합니다.
     private final Environment env;
@@ -160,11 +159,35 @@ public class UserController {
     // 그 이메일을 가지고 ordering-service가 원하는 회원 정보를 리턴하는 메서드.
     @GetMapping("/findByEmail")
     public ResponseEntity<?> getUserByEmail(@RequestParam String email) {
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
         log.info("getUserByEmail: email: {}", email);
         UserResDto dto = userService.findByEmail(email);
         CommonResDto resDto
                 = new CommonResDto(HttpStatus.OK, "이메일로 회원 조회 완료", dto);
         return ResponseEntity.ok().body(resDto);
+    }
+
+    // 유효한 이메일인지 검증 요청
+    @PostMapping("/email-valid")
+    public ResponseEntity<?> emailvalid(@RequestBody Map<String, String> map) {
+        String email = map.get("email");
+        log.info("이메일 인증 요청!: email: {}", email);
+        String authNum = userService.mailCheck(email);
+
+        return ResponseEntity.ok().body(authNum);
+    }
+
+    // 인증 코드 검증 요청
+    @PostMapping("/verify")
+    public ResponseEntity<?> verify(@RequestBody Map<String, String> map) {
+        log.info("인증 코드 검증! map: {}", map);
+        Map<String, String> result = userService.verifyEmail(map);
+        return ResponseEntity.ok().body("Success");
     }
 
     @GetMapping("/health-check")
@@ -180,7 +203,6 @@ public class UserController {
 
 
 }
-
 
 
 
