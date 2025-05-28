@@ -4,6 +4,11 @@ server:
 spring:
   application:
     name: user-service
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: admin
+    password: admin123
 
   mail:
     host: smtp.naver.com #  SMTP 서버 호스트
@@ -21,7 +26,21 @@ spring:
 #          starttls:
 #            enable: true 구글(gmail) 설정은 tls 사용 허용
 
+# 카카오 로그인용 데이터
+oauth2:
+  kakao:
+    client-id: a28edd7e8b4b1d6938870b5175569f8a
+    redirect-uri: http://localhost:8000/user-service/user/kakao
 
+
+management:
+  endpoint:
+    health:
+      show-details: always #  health 요청 보냈을 때 건강상태 좀 더 디테일하게 보기
+  endpoints:
+    web:
+      exposure:
+        include: health, busrefresh, beans
 
 
 

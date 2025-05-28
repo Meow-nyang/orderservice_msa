@@ -3,14 +3,17 @@ package com.playdata.userservice.user.controller;
 import com.playdata.userservice.common.auth.JwtTokenProvider;
 import com.playdata.userservice.common.dto.CommonErrorDto;
 import com.playdata.userservice.common.dto.CommonResDto;
+import com.playdata.userservice.common.dto.KakaoUserDto;
 import com.playdata.userservice.user.dto.UserLoginReqDto;
 import com.playdata.userservice.user.dto.UserResDto;
 import com.playdata.userservice.user.dto.UserSaveReqDto;
 import com.playdata.userservice.user.entity.User;
 import com.playdata.userservice.user.service.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -19,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 @RequestMapping("/user") // user 관련 요청은 /user로 시작한다고 가정.
 @RequiredArgsConstructor
 @Slf4j
+//@RefreshScope // spring cloud config가 관리하는 파일의 데이터가 변경되면 빈들을 새로고침해주는 아노테이션
 public class UserController {
 
     // 컨트롤러는 서비스에 의존하고 있다. (요청과 함께 전달받은 데이터를 서비스에게 넘겨야 함!)
@@ -167,6 +172,7 @@ public class UserController {
 
         log.info("getUserByEmail: email: {}", email);
         UserResDto dto = userService.findByEmail(email);
+        log.info("getUserByEmail: dto: {}", dto);
         CommonResDto resDto
                 = new CommonResDto(HttpStatus.OK, "이메일로 회원 조회 완료", dto);
         return ResponseEntity.ok().body(resDto);
@@ -197,8 +203,61 @@ public class UserController {
         msg += "token.secret: " + env.getProperty("token.secret");
         msg += "aws.accessKey: " + env.getProperty("aws.accessKey");
         msg += "aws.secretKey: " + env.getProperty("aws.secretKey");
+        msg += "message: " + env.getProperty("message");
 
         return msg;
+    }
+
+    // 카카오 콜백 요청 처리
+    @GetMapping("/kakao")
+    public void kakaoCallback(@RequestParam String code,
+                              // 응답을 평소처럼 주는게 아니라, 직접 커스텀해서 클라이언트에게 전달.
+                              HttpServletResponse response) throws IOException {
+        log.info("카카오 콜백 처리 시작! code: {}", code);
+
+        // 인가코드로 액세스토큰 받기
+        String kakaoAccessToken = userService.getKakaoAccessTken(code);
+        // 액세스토큰으로 사용자 정보 받기
+        KakaoUserDto dto = userService.getKakaoUserInfo(kakaoAccessToken);
+        // 회원가입 or 로그인 처리
+        UserResDto resDto = userService.findOrCreateKakaoUser(dto);
+
+        // JWT 토큰 생성 (우리 사이트 로그인 유지를 위해. 사용자 정보를 위해.)
+        String token = jwtTokenProvider.createToken(resDto.getEmail(), resDto.getRole().toString());
+        String refreshToken
+                = jwtTokenProvider.createRefreshToken(resDto.getEmail(), resDto.getRole().toString());
+
+        // 리프레시 토큰 redis에 저장
+        redisTemplate.opsForValue().set("user:refresh:" + resDto.getId(), refreshToken, 2, TimeUnit.MINUTES);
+
+        // 팝업 닫기 HTML 응답
+        String html = String.format("""
+                <!DOCTYPE html>
+                <html>
+                <head><title>카카오 로그인 완료</title></head>
+                <body>
+                    <script>
+                        if (window.opener) {
+                            window.opener.postMessage({
+                                type: 'OAUTH_SUCCESS',
+                                token: '%s',
+                                id: '%s',
+                                role: '%s',
+                                provider: 'KAKAO'
+                            }, 'http://localhost:5173');
+                            window.close();
+                        } else {
+                            window.location.href = 'http://localhost:5173';
+                        }
+                    </script>
+                    <p>카카오 로그인 처리 중...</p>
+                </body>
+                </html>
+                """, token, resDto.getId(), resDto.getRole().toString());
+        response.setContentType("text/html;charset=UTF-8");
+        response.getWriter().write(html);
+
+
     }
 
 
